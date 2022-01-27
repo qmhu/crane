@@ -35,11 +35,18 @@ spec:
           operator: Exists
       containers:
         - name: craned
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: "2"
+              memory: 4Gi
           image: docker.io/gocrane/craned:v0.1.0
           imagePullPolicy: IfNotPresent
           command:
             - /craned
-            - --prometheus-address=PROMETHEUS_ADDRESS
+            - --prometheus-address=http://kvass-thanos.kube-system:9090
             - --feature-gates=Analysis=true,TimeSeriesPrediction=true,Autoscaling=true
             - --recommendation-config-file=/tmp/recommendation-config/config_set.yaml
             - -v=4

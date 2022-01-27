@@ -1,0 +1,58 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: metrictest
+rules:
+  - apiGroups:
+      - "custom.metrics.k8s.io"
+    resources:
+      - '*'
+    verbs:
+      - '*'
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: metrictest
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: metrictest
+subjects:
+  - kind: ServiceAccount
+    name: metrictest
+    namespace: default
+
+---
+
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: metrictest
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: metrictest
+spec:
+  template:
+    spec:
+      serviceAccountName: metrictest
+      containers:
+        - name: metrictest
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          image: docker.io/gocrane/metrictest:v0.1.2
+          args:
+            - /app/metric-test
+            - --concurrency=400
+      restartPolicy: Never

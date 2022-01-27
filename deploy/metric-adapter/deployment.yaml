@@ -22,17 +22,29 @@ spec:
     metadata:
       labels:
         app: metric-adapter
-      name: metric-adapter
     spec:
       serviceAccountName: metric-adapter
       containers:
         - name: metric-adapter
-          image: docker.io/gocrane/metric-adapter:v0.1.0
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: "2"
+              memory: 4Gi
+          image: docker.io/gocrane/metric-adapter:1df25bb
           imagePullPolicy: IfNotPresent
           args:
             - /metric-adapter
             - --secure-port=6443
             - --alsologtostderr=true
+            - --remote-adapter=true
+            - --remote-adapter-service-namespace=kube-system
+            - --remote-adapter-service-name=hpa-metrics-service
+            - --remote-adapter-service-port=443
+            - --api-qps=300
+            - --api-burst=400
           ports:
             - containerPort: 6443
               name: https
