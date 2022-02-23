@@ -96,11 +96,11 @@ func (a *EHPAAdvisor) Advise(proposed *types.ProposedRecommendation) error {
 	targetCpuUtilization := int32(50) // todo: configurable
 	maxReplicasFactor := 1.2          // todo: configurable
 
-	maxCpuUtilization := int32(int64(maxCpuUsage) * 1000 * 100 / requestTotal)
+	maxCpuUtilization := int32(int64(maxCpuUsage) * 1000 * 100 * int64(len(a.Pods)) / requestTotal)
 	proposedMaxRatio := float64(maxCpuUtilization) / float64(targetCpuUtilization)
 	maxReplicasProposed := int32(math.Ceil(proposedMaxRatio * float64(a.ReadyPodNumber) * maxReplicasFactor))
 
-	minCpuUtilization := int32(int64(minCpuUsage) * 1000 * 100 / requestTotal)
+	minCpuUtilization := int32(int64(minCpuUsage) * 1000 * 100 * int64(len(a.Pods)) / requestTotal)
 	proposedMinRatio := float64(minCpuUtilization) / float64(targetCpuUtilization)
 	minReplicasProposed := int32(math.Ceil(proposedMinRatio * float64(a.ReadyPodNumber)))
 
