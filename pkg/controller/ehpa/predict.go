@@ -131,7 +131,7 @@ func (c *EffectiveHPAController) NewPredictionObject(ehpa *autoscalingapi.Effect
 		if metric.Type == autoscalingv2.ResourceMetricSourceType {
 			metricName, err := GetPredictionMetricName(metric.Resource.Name)
 			if err != nil {
-				return nil, err
+				continue
 			}
 
 			predictionMetrics = append(predictionMetrics, predictionapi.PredictionMetric{
