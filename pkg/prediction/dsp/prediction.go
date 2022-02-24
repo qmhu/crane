@@ -420,7 +420,6 @@ func (p *periodicSignalPrediction) getPredictedTimeSeriesList(ctx context.Contex
 		signal := p.a.GetSignal(queryExpr, key)
 		if signal == nil {
 			klog.InfoS("Aggregate signal not found", "queryExpr", queryExpr, "key", key)
-			notReadySignals[key] = struct{}{}
 			continue
 		}
 		if signal.getStatus() == prediction.StatusNotStarted {
@@ -472,6 +471,7 @@ func (p *periodicSignalPrediction) getPredictedTimeSeriesList(ctx context.Contex
 					signal := p.a.GetSignal(queryExpr, key)
 					if signal == nil {
 						klog.InfoS("Aggregate signal not found", "queryExpr", queryExpr, "key", key)
+						delete(notReadySignals, key)
 						continue
 					}
 					if signal.getStatus() == prediction.StatusNotStarted {
