@@ -320,7 +320,9 @@ func (p *periodicSignalPrediction) updateAggregateSignals(queryExpr string, tsLi
 	for i := range predictedTimeSeriesList {
 		key := prediction.AggregateSignalKey(predictedTimeSeriesList[i].Labels)
 		signal := p.a.GetOrStoreSignal(queryExpr, key, newAggregateSignal())
-		signal.setPredictedTimeSeries(predictedTimeSeriesList[i])
+		if signal != nil {
+			signal.setPredictedTimeSeries(predictedTimeSeriesList[i])
+		}
 	}
 }
 
