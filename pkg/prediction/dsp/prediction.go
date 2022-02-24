@@ -419,9 +419,12 @@ func (p *periodicSignalPrediction) getPredictedTimeSeriesList(ctx context.Contex
 			notReadySignals[key] = struct{}{}
 			continue
 		}
-		if signal.getStatus() != prediction.StatusReady {
-			klog.InfoS("Aggregate signal not ready", "queryExpr", queryExpr, "key", key)
+		if signal.getStatus() == prediction.StatusNotStarted {
+			klog.InfoS("Aggregate signal not started", "queryExpr", queryExpr, "key", key)
 			notReadySignals[key] = struct{}{}
+			continue
+		} else if signal.getStatus() == prediction.StatusUnPredictable {
+			klog.InfoS("Aggregate signal unpredictable", "queryExpr", queryExpr, "key", key)
 			continue
 		}
 
@@ -467,8 +470,12 @@ func (p *periodicSignalPrediction) getPredictedTimeSeriesList(ctx context.Contex
 						klog.InfoS("Aggregate signal not found", "queryExpr", queryExpr, "key", key)
 						continue
 					}
-					if signal.getStatus() != prediction.StatusReady {
-						klog.InfoS("Aggregate signal not ready", "queryExpr", queryExpr, "key", key)
+					if signal.getStatus() == prediction.StatusNotStarted {
+						klog.InfoS("Aggregate signal not started", "queryExpr", queryExpr, "key", key)
+						continue
+					} else if signal.getStatus() == prediction.StatusUnPredictable {
+						klog.InfoS("Aggregate signal unpredictable", "queryExpr", queryExpr, "key", key)
+						delete(notReadySignals, key)
 						continue
 					}
 
