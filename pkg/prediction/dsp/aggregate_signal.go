@@ -13,20 +13,39 @@ type aggregateSignal struct {
 	startTime           time.Time
 	endTime             time.Time
 	lastUpdateTime      time.Time
+	mutex               sync.RWMutex
+	status              prediction.Status
 }
 
 func newAggregateSignal() *aggregateSignal {
-	return &aggregateSignal{}
+	return &aggregateSignal{
+		status: prediction.StatusNotStarted,
+	}
 }
 
 func (a *aggregateSignal) setPredictedTimeSeries(ts *common.TimeSeries) {
 	n := len(ts.Samples)
 	if n > 0 {
+		a.mutex.Lock()
+		defer a.mutex.Unlock()
 		a.startTime = time.Unix(ts.Samples[0].Timestamp, 0)
 		a.endTime = time.Unix(ts.Samples[n-1].Timestamp, 0)
 		a.predictedTimeSeries = ts
 		a.lastUpdateTime = time.Now()
+		a.status = prediction.StatusReady
 	}
+}
+
+func (a *aggregateSignal) getStatus() prediction.Status {
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+	return a.status
+}
+
+func (a *aggregateSignal) setStatus(status prediction.Status) {
+	a.mutex.Lock()
+	a.status = status
+	a.mutex.Unlock()
 }
 
 type aggregateSignals struct {

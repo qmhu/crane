@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -25,7 +26,7 @@ func PredictionQueryTimeSeriesOnce(predictor prediction.Interface, caller string
 	}()
 
 	metricContext.WithConfig(metricConfig)
-	return predictor.QueryPredictedTimeSeries(query, startTime, endTime)
+	return predictor.QueryPredictedTimeSeries(context.TODO(), query, startTime, endTime)
 }
 
 func PredictionQueryTimeSeriesValuesOnce(predictor prediction.Interface, caller string, metricConfig *config.Config, query string) ([]*common.TimeSeries, error) {
@@ -43,5 +44,5 @@ func PredictionQueryTimeSeriesValuesOnce(predictor prediction.Interface, caller 
 	}()
 
 	metricContext.WithConfig(metricConfig)
-	return predictor.QueryRealtimePredictedValues(query)
+	return predictor.QueryRealtimePredictedValues(context.TODO(), query)
 }

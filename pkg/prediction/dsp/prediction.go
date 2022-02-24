@@ -1,6 +1,7 @@
 package dsp
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -267,6 +268,9 @@ func (p *periodicSignalPrediction) updateAggregateSignals(queryExpr string, tsLi
 			klog.V(4).InfoS("This is a periodic time series.", "queryExpr", queryExpr, "labels", ts.Labels, "cycleDuration", cycleDuration)
 		} else {
 			klog.V(4).InfoS("This is not a periodic time series.", "queryExpr", queryExpr, "labels", ts.Labels)
+			key := prediction.AggregateSignalKey(ts.Labels)
+			signal := p.a.GetOrStoreSignal(queryExpr, key, newAggregateSignal())
+			signal.setStatus(prediction.StatusUnPredictable)
 		}
 
 		if cycleDuration > 0 {
@@ -349,7 +353,7 @@ func bestEstimator(id string, estimators []Estimator, signal *Signal, totalCycle
 	return bestEstimator
 }
 
-func (p *periodicSignalPrediction) QueryPredictedTimeSeries(queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error) {
+func (p *periodicSignalPrediction) QueryPredictedTimeSeries(ctx context.Context, queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error) {
 	if p.GetRealtimeProvider() == nil {
 		return nil, fmt.Errorf("realtime data provider not set")
 	}
@@ -360,10 +364,10 @@ func (p *periodicSignalPrediction) QueryPredictedTimeSeries(queryExpr string, st
 		return nil, err
 	}
 
-	return p.getPredictedTimeSeriesList(queryExpr, tsList, startTime, endTime), nil
+	return p.getPredictedTimeSeriesList(ctx, queryExpr, tsList, startTime, endTime), nil
 }
 
-func (p *periodicSignalPrediction) QueryRealtimePredictedValues(queryExpr string) ([]*common.TimeSeries, error) {
+func (p *periodicSignalPrediction) QueryRealtimePredictedValues(ctx context.Context, queryExpr string) ([]*common.TimeSeries, error) {
 	if p.GetRealtimeProvider() == nil {
 		return nil, fmt.Errorf("realtime data provider not set")
 	}
@@ -379,7 +383,7 @@ func (p *periodicSignalPrediction) QueryRealtimePredictedValues(queryExpr string
 	start := now.Truncate(config.historyResolution)
 	end := start.Add(defaultFuture)
 
-	predictedTimeSeries := p.getPredictedTimeSeriesList(queryExpr, tsList, start, end)
+	predictedTimeSeries := p.getPredictedTimeSeriesList(ctx, queryExpr, tsList, start, end)
 
 	var realtimePredictedTimeSeries []*common.TimeSeries
 
@@ -401,18 +405,27 @@ func (p *periodicSignalPrediction) QueryRealtimePredictedValues(queryExpr string
 	return realtimePredictedTimeSeries, nil
 }
 
-func (p *periodicSignalPrediction) getPredictedTimeSeriesList(queryExpr string, tsList []*common.TimeSeries, start, end time.Time) []*common.TimeSeries {
+func (p *periodicSignalPrediction) getPredictedTimeSeriesList(ctx context.Context, queryExpr string, tsList []*common.TimeSeries, start, end time.Time) []*common.TimeSeries {
 	var predictedTimeSeriesList []*common.TimeSeries
+
+	notReadySignals := map[string]struct{}{}
 
 	for _, ts := range tsList {
 		key := prediction.AggregateSignalKey(ts.Labels)
-		klog.V(6).InfoS("Got aggregate signal key", "key", key)
 
 		signal := p.a.GetSignal(queryExpr, key)
 		if signal == nil {
-			klog.InfoS("Aggregate signal not found", "key", key)
+			klog.InfoS("Aggregate signal not found", "queryExpr", queryExpr, "key", key)
+			notReadySignals[key] = struct{}{}
 			continue
 		}
+		if signal.getStatus() != prediction.StatusReady {
+			klog.InfoS("Aggregate signal not ready", "queryExpr", queryExpr, "key", key)
+			notReadySignals[key] = struct{}{}
+			continue
+		}
+
+		klog.V(6).InfoS("Got aggregate signal key", "queryExpr", queryExpr, "key", key)
 
 		var samples []common.Sample
 		for _, sample := range signal.predictedTimeSeries.Samples {
@@ -434,6 +447,58 @@ func (p *periodicSignalPrediction) getPredictedTimeSeriesList(queryExpr string, 
 
 		klog.V(6).Info("Got DSP predicted samples.", "queryExpr", queryExpr, "#samples", len(samples), "labels", signal.predictedTimeSeries.Labels)
 	}
+
+	if len(notReadySignals) > 0 {
+		ticker := time.NewTicker(100*time.Millisecond)
+		for {
+			if len(notReadySignals) == 0 {
+				break
+			}
+
+			select {
+			case <-ctx.Done():
+				klog.Info("Time out.")
+				ticker.Stop()
+				return predictedTimeSeriesList
+			case <- ticker.C:
+				for key, _ := range notReadySignals {
+					signal := p.a.GetSignal(queryExpr, key)
+					if signal == nil {
+						klog.InfoS("Aggregate signal not found", "queryExpr", queryExpr, "key", key)
+						continue
+					}
+					if signal.getStatus() != prediction.StatusReady {
+						klog.InfoS("Aggregate signal not ready", "queryExpr", queryExpr, "key", key)
+						continue
+					}
+
+					klog.V(6).InfoS("Got aggregate signal key", "queryExpr", queryExpr, "key", key)
+					delete(notReadySignals, key)
+
+					var samples []common.Sample
+					for _, sample := range signal.predictedTimeSeries.Samples {
+						t := time.Unix(sample.Timestamp, 0)
+						// Check if t is in [startTime, endTime]
+						if !t.Before(start) && !t.After(end) {
+							samples = append(samples, sample)
+						} else if t.After(end) {
+							break
+						}
+					}
+
+					if len(samples) > 0 {
+						predictedTimeSeriesList = append(predictedTimeSeriesList, &common.TimeSeries{
+							Labels:  signal.predictedTimeSeries.Labels,
+							Samples: samples,
+						})
+					}
+
+					klog.V(6).Info("Got DSP predicted samples.", "queryExpr", queryExpr, "#samples", len(samples), "labels", signal.predictedTimeSeries.Labels)
+				}
+			}
+		}
+	}
+
 	return predictedTimeSeriesList
 }
 

@@ -1,6 +1,7 @@
 package percentile
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -26,7 +27,7 @@ type percentilePrediction struct {
 //	return p.GetRealtimePredictedValues(metricName, conditions)
 //}
 
-func (p *percentilePrediction) QueryPredictedTimeSeries(queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error) {
+func (p *percentilePrediction) QueryPredictedTimeSeries(ctx context.Context, queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error) {
 	if p.GetRealtimeProvider() == nil {
 		return nil, fmt.Errorf("realtime data provider not set")
 	}
@@ -72,7 +73,7 @@ func GenSamplesFromWindow(value float64, start time.Time, end time.Time, step ti
 	return result
 }
 
-func (p *percentilePrediction) QueryRealtimePredictedValues(queryExpr string) ([]*common.TimeSeries, error) {
+func (p *percentilePrediction) QueryRealtimePredictedValues(ctx context.Context, queryExpr string) ([]*common.TimeSeries, error) {
 	if p.GetRealtimeProvider() == nil {
 		return nil, fmt.Errorf("realtime data provider not set")
 	}
@@ -232,6 +233,7 @@ func (p *percentilePrediction) init(qc prediction.QueryExprWithCaller) error {
 				signal.addSample(t, s.Value)
 			}
 		}
+		signal.setStatus(prediction.StatusReady)
 	} else {
 		labelsToTimeSeriesMap := map[string]*common.TimeSeries{}
 		for i, ts := range historyTimeSeries {
@@ -249,6 +251,7 @@ func (p *percentilePrediction) init(qc prediction.QueryExprWithCaller) error {
 				t := time.Unix(s.Timestamp, 0)
 				signal.addSample(t, s.Value)
 			}
+			signal.setStatus(prediction.StatusReady)
 		}
 	}
 
@@ -313,12 +316,12 @@ func (p *percentilePrediction) addSamples(queryExpr string) {
 
 			signal := p.a.GetOrStoreSignal(queryExpr, key, newAggregateSignal(c))
 			if signal == nil {
-				return
+				continue
 			}
-
 			sample := ts.Samples[len(ts.Samples)-1]
 			sampleTime := time.Unix(sample.Timestamp, 0)
 			signal.addSample(sampleTime, sample.Value)
+			signal.setStatus(prediction.StatusReady)
 			klog.V(6).InfoS("Sample added.", "sampleValue", sample.Value, "sampleTime", sampleTime, "queryExpr", queryExpr)
 		}
 	} else {
@@ -340,6 +343,7 @@ func (p *percentilePrediction) addSamples(queryExpr string) {
 			}
 			sampleTime := time.Unix(sample.Timestamp, 0)
 			signal.addSample(sampleTime, sample.Value)
+			signal.setStatus(prediction.StatusReady)
 		}
 	}
 }

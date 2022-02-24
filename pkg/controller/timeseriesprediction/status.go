@@ -150,7 +150,7 @@ func (tc *Controller) doPredict(tsPrediction *v1alpha1.TimeSeriesPrediction, sta
 		}
 		var data []*common.TimeSeries
 		// percentile is ok for time series
-		data, err = predictor.QueryPredictedTimeSeries(queryExpr, start, end)
+		data, err = predictor.QueryPredictedTimeSeries(context.TODO(), queryExpr, start, end)
 		if err != nil {
 			return result, err
 		}

@@ -1,6 +1,7 @@
 package prediction
 
 import (
+	"context"
 	"time"
 
 	"github.com/gocrane/crane/pkg/common"
@@ -28,7 +29,7 @@ type Interface interface {
 	//GetRealtimePredictedValues(metricName string, Conditions []common.QueryCondition) ([]*common.TimeSeries, error)
 
 	// QueryRealtimePredictedValues returns predicted values based on the specified query expression
-	QueryRealtimePredictedValues(queryExpr string) ([]*common.TimeSeries, error)
+	QueryRealtimePredictedValues(ctx context.Context, queryExpr string) ([]*common.TimeSeries, error)
 
 	// GetPredictedTimeSeries returns predicted metric time series in the given time range.
 	//GetPredictedTimeSeries(
@@ -38,7 +39,7 @@ type Interface interface {
 	//	endTime time.Time) ([]*common.TimeSeries, error)
 
 	// QueryPredictedTimeSeries returns predicted time series based on the specified query expression
-	QueryPredictedTimeSeries(queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error)
+	QueryPredictedTimeSeries(ctx context.Context, queryExpr string, startTime time.Time, endTime time.Time) ([]*common.TimeSeries, error)
 
 	Name() string
 }

@@ -15,6 +15,14 @@ const (
 	RealtimeProvider = "__realtime"
 )
 
+type Status string
+
+const (
+	StatusReady         Status = "Ready"
+	StatusNotStarted    Status = "NotStarted"
+	StatusUnPredictable Status = "UnPredictable"
+)
+
 type WithMetricEvent struct {
 	MetricName string
 	Conditions []common.QueryCondition

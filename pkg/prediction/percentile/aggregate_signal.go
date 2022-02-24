@@ -10,15 +10,19 @@ import (
 )
 
 type aggregateSignal struct {
+	mutex             sync.RWMutex
 	histogram         vpa.Histogram
 	firstSampleTime   time.Time
 	lastSampleTime    time.Time
 	minSampleWeight   float64
 	totalSamplesCount int
 	creationTime      time.Time
+	status            prediction.Status
 }
 
 func (a *aggregateSignal) addSample(sampleTime time.Time, sampleValue float64) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 	a.histogram.AddSample(sampleValue, math.Max(a.minSampleWeight, sampleValue), sampleTime)
 	if a.lastSampleTime.Before(sampleTime) {
 		a.lastSampleTime = sampleTime
@@ -29,11 +33,24 @@ func (a *aggregateSignal) addSample(sampleTime time.Time, sampleValue float64) {
 	a.totalSamplesCount++
 }
 
+func (a *aggregateSignal) getStatus() prediction.Status {
+	a.mutex.RLock()
+	defer a.mutex.RUnlock()
+	return a.status
+}
+
+func (a *aggregateSignal) setStatus(status prediction.Status) {
+	a.mutex.Lock()
+	a.status = status
+	a.mutex.Unlock()
+}
+
 func newAggregateSignal(c *internalConfig) *aggregateSignal {
 	return &aggregateSignal{
 		histogram:       vpa.NewHistogram(c.histogramOptions),
 		minSampleWeight: c.minSampleWeight,
 		creationTime:    time.Now(),
+		status:          prediction.StatusNotStarted,
 	}
 }
 
