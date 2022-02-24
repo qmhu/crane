@@ -270,7 +270,9 @@ func (p *periodicSignalPrediction) updateAggregateSignals(queryExpr string, tsLi
 			klog.V(4).InfoS("This is not a periodic time series.", "queryExpr", queryExpr, "labels", ts.Labels)
 			key := prediction.AggregateSignalKey(ts.Labels)
 			signal := p.a.GetOrStoreSignal(queryExpr, key, newAggregateSignal())
-			signal.setStatus(prediction.StatusUnPredictable)
+			if signal != nil {
+				signal.setStatus(prediction.StatusUnPredictable)
+			}
 		}
 
 		if cycleDuration > 0 {
