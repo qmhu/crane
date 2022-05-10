@@ -76,6 +76,7 @@ func main() {
 	var remoteAdapterServiceNamespace string
 	var remoteAdapterServiceName string
 	var remoteAdapterServicePort int
+	var remoteUrl string
 	var apiQps int
 	var apiBurst int
 
@@ -84,6 +85,7 @@ func main() {
 	cmd.Flags().StringVar(&remoteAdapterServiceNamespace, "remote-adapter-service-namespace", "", "Namespace of remote adapter's service")
 	cmd.Flags().StringVar(&remoteAdapterServiceName, "remote-adapter-service-name", "", "Name of remote adapter's service")
 	cmd.Flags().IntVar(&remoteAdapterServicePort, "remote-adapter-service-port", 6443, "Port of remote adapter's service")
+	cmd.Flags().StringVar(&remoteUrl, "remote-adapter-url", "", "URL of remote adapter's service")
 	cmd.Flags().IntVar(&apiQps, "api-qps", 300, "QPS of rest config.")
 	cmd.Flags().IntVar(&apiBurst, "api-burst", 400, "Burst of rest config.")
 	cmd.Flags().AddGoFlagSet(flag.CommandLine) // make sure we get the klog flags
@@ -108,7 +110,7 @@ func main() {
 	var remoteAdapter *metricprovider.RemoteAdapter
 	if enableRemoteAdapter {
 		klog.Infof("Enable remote adapter: %s/%s", remoteAdapterServiceNamespace, remoteAdapterServiceName)
-		remoteAdapter, err = metricprovider.NewRemoteAdapter(remoteAdapterServiceNamespace, remoteAdapterServiceName, remoteAdapterServicePort, config, client)
+		remoteAdapter, err = metricprovider.NewRemoteAdapter(remoteUrl, config, client)
 		if err != nil {
 			klog.Exitf("Failed to create remote adapter: %v", err)
 		}

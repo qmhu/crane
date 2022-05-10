@@ -29,19 +29,35 @@ type RemoteAdapter struct {
 	restMapper        meta.RESTMapper
 }
 
-func NewRemoteAdapter(namespace string, name string, port int, config *rest.Config, client client.Client) (*RemoteAdapter, error) {
+type MyGetter struct {
+
+}
+
+func (*MyGetter) PreferredVersion() (schema.GroupVersion, error) {
+	return schema.GroupVersion{
+		Group: "custom.metrics.k8s.io",
+		Version: "v1beta1",
+	}, nil
+}
+
+func (*MyGetter) Invalidate() {
+}
+
+func NewRemoteAdapter(url string, config *rest.Config, client client.Client) (*RemoteAdapter, error) {
 	metricConfig := rest.CopyConfig(config)
-	metricConfig.Insecure = true
+	/*metricConfig.Insecure = true
 	metricConfig.CAData = nil
 	metricConfig.CAFile = ""
-	metricConfig.Host = fmt.Sprintf("https://%s.%s.svc:%d", name, namespace, port)
+	metricConfig.Host = fmt.Sprintf("https://%s", url)*/
+
+	apiVersionsGetter := &MyGetter{}
 
 	discoveryClientSet, err := discovery.NewDiscoveryClientForConfig(metricConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create discovery client: %v ", err)
 	}
 
-	apiVersionsGetter := cmClient.NewAvailableAPIsGetter(discoveryClientSet)
+	//apiVersionsGetter := cmClient.NewAvailableAPIsGetter(discoveryClientSet)
 	cachedClient := cacheddiscovery.NewMemCacheClient(discoveryClientSet)
 
 	// use actual rest mapper here
