@@ -2790,7 +2790,7 @@ Forwarding from [::1]:8082 -&amp;gt; 8082
 &lt;p>以下是一个典型的存在波峰波谷规律的 Workload 的历史资源用量&lt;/p>
 &lt;p>&lt;img src="/images/algorithm/dsp/input0.png" alt="">&lt;/p>
 &lt;h3 id="计算最小副本算法">计算最小副本算法&lt;/h3>
-&lt;p>方法和副本推荐中计算副本算法一致，请参考：&lt;a href="/zh-cn/docs/tutorials/recommendation/recommendation-framework">&lt;strong>副本推荐&lt;/strong>&lt;/a>&lt;/p>
+&lt;p>方法和副本推荐中计算副本算法一致，请参考：&lt;a href="/zh-cn/docs/tutorials/recommendation/replicas-recommendation">&lt;strong>副本推荐&lt;/strong>&lt;/a>&lt;/p>
 &lt;h2 id="支持的资源类型">支持的资源类型&lt;/h2>
 &lt;p>默认支持 StatefulSet 和 Deployment，但是支持所有实现了 Scale SubResource 的 Workload。&lt;/p>
 &lt;h2 id="参数配置">参数配置&lt;/h2>

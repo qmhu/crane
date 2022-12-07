@@ -2559,9 +2559,9 @@ Forwarding from 127.0.0.1:8082 -&amp;gt; 8082
 Forwarding from [::1]:8082 -&amp;gt; 8082
 &lt;/code>&lt;/pre>&lt;p>打开浏览器，访问&lt;code>http://localhost:8082/api/prediction/debug/&amp;lt;namespace&amp;gt;/&amp;lt;timeseries prediction name&amp;gt;&lt;/code>&lt;/p></description></item><item><title>Docs: HPA Recommendation（Alpha）</title><link>/docs/tutorials/recommendation/hpa-recommendation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/tutorials/recommendation/hpa-recommendation/</guid><description>
 &lt;p>Kubernetes&amp;rsquo; users want to use HPA to optimize resource utilization. But it is often that we don&amp;rsquo;t know which applications are suitable for HPA or how to configure the parameters of HPA. With HPA Recommendation you can analyze the actual application usage and get recommended configurations. You can use it to improve application resource utilization.&lt;/p>
-&lt;p>HPA recommendations are still in Alpha phase, comments are welcome.&lt;/p>
+&lt;p>HPA recommendation is still in Alpha phase, comments are welcome.&lt;/p>
 &lt;h2 id="motivation">Motivation&lt;/h2>
-&lt;p>In Kubernetes, the HPA (HorizontalPodAutoscaler) automatically updates the workload replicas (such as Deployment or StatefulSet) meet the target utilization. However, in the actual world, we observe following problems:&lt;/p>
+&lt;p>In Kubernetes, the HPA (HorizontalPodAutoscaler) automatically updates the workload replicas (such as Deployment or StatefulSet) to meet the target utilization. However, in the actual world, we observe following problems:&lt;/p>
 &lt;ul>
 &lt;li>Some applications should improve resource utilization through HPA, but HPA is not configured&lt;/li>
 &lt;li>Some HPA configuration is not reasonable, can not effectively perform autoscaling, also can not improve resource utilization.&lt;/li>
@@ -2649,7 +2649,7 @@ Forwarding from [::1]:8082 -&amp;gt; 8082
 &lt;p>The following is a typical workload with peaks and troughs which is suitable for HPA.&lt;/p>
 &lt;p>&lt;img src="/images/algorithm/dsp/input0.png" alt="">&lt;/p>
 &lt;h3 id="algorithm-for-recommend-minreplicas">Algorithm for recommend MinReplicas&lt;/h3>
-&lt;p>The method is consistent with replica recommendation. Please referring to: &lt;a href="/docs/tutorials/recommendation/recommendation-framework">&lt;strong>Replicas Recommendation&lt;/strong>&lt;/a>&lt;/p>
+&lt;p>The method is consistent with replica recommendation. Please referring to: &lt;a href="/docs/tutorials/recommendation/replicas-recommendation">&lt;strong>Replicas Recommendation&lt;/strong>&lt;/a>&lt;/p>
 &lt;h2 id="accepted-resources">Accepted resources&lt;/h2>
 &lt;p>Support StatefulSet and Deployment by default，but all workloads that support &lt;code>Scale SubResource&lt;/code> are supported.&lt;/p>
 &lt;h2 id="configuration">Configuration&lt;/h2>
