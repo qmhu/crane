@@ -613,7 +613,7 @@ If you want to know how Crane makes Recommendations, or if you want to try to im
 &lt;h2 id="how-to-make-recommendations-more-accurate">How to make recommendations more accurate&lt;/h2>
 &lt;p>The more historical data stored in a monitoring system, such as Prometheus, the more accurate the recommendation will be. More than two weeks&amp;rsquo;s data is recommended for production. Predictions about new apps are often inaccurate.&lt;/p></description></item><item><title>Docs: Application Resource Optimize Model</title><link>/docs/core-concept/resource-optimize-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/core-concept/resource-optimize-model/</guid><description>
 &lt;p>Resource optimization is a common optimization strategy in FinOps. Based on the characteristics of Kubernetes applications, we have summarized the &lt;strong>resource optimization model&lt;/strong> for cloud-native applications:&lt;/p>
-&lt;p>&lt;img src="/images/resource-model.png" alt="Crane Overview">&lt;/p>
+&lt;p>&lt;img src="/images/resource-model.png" alt="Resource Model">&lt;/p>
 &lt;p>The five lines in the figure from top to bottom are:&lt;/p>
 &lt;ol>
 &lt;li>Node capacity: the total resources of all nodes in the cluster, corresponding to the Capacity of the cluster&lt;/li>

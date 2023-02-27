@@ -1669,7 +1669,7 @@ For the first make image, It takes a bit of a long time, Please be patient.&lt;/
 &lt;p>When we finish the make image, in the docker desktop, we can see the image we built, and the Tag is the hash value at the time of the git commit.&lt;/p>
 &lt;p>&lt;img src="/images/developer-guide/make_image_docker_images.jpg" alt="make_image_docker_images">&lt;/p></description></item><item><title>Docs: 应用资源优化模型</title><link>/zh-cn/docs/core-concept/resource-optimize-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/zh-cn/docs/core-concept/resource-optimize-model/</guid><description>
 &lt;p>资源优化是 FinOps 中常见的优化手段，我们基于 Kubernetes 应用的特点总结出云原生应用的&lt;strong>资源优化模型&lt;/strong>：&lt;/p>
-&lt;p>&lt;img src="/images/resource-model.png" alt="Crane Overview">&lt;/p>
+&lt;p>&lt;img src="/images/resource-model.png" alt="Resource Model">&lt;/p>
 &lt;p>图中五条线从上到下分别是：&lt;/p>
 &lt;ol>
 &lt;li>节点容量：集群中所有节点的资源总量，对应集群的 Capacity&lt;/li>
